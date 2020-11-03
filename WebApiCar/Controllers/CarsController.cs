@@ -15,14 +15,15 @@ namespace WebApiCar.Controllers
     {
 
         static string conn = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CarDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        List<Car> carList = new List<Car>();
 
-        public static List<Car> carList = new List<Car>()
-        {
-            new Car(){Id = 1,Model="x3",Vendor="Tesla", Price=400000},
-            new Car(){Id = 2,Model="x2",Vendor="Tesla", Price=600000},
-            new Car(){Id = 3,Model="x1",Vendor="Tesla", Price=800000},
-            new Car(){Id = 4,Model="x0",Vendor="Tesla", Price=1400000},
-        };
+        //public static List<Car> carList = new List<Car>()
+        //{
+        //    new Car(){Id = 1,Model="x3",Vendor="Tesla", Price=400000},
+        //    new Car(){Id = 2,Model="x2",Vendor="Tesla", Price=600000},
+        //    new Car(){Id = 3,Model="x1",Vendor="Tesla", Price=800000},
+        //    new Car(){Id = 4,Model="x0",Vendor="Tesla", Price=1400000},
+        //};
 
         /// <summary>
         /// Method for get all the cars from the static list
@@ -32,9 +33,12 @@ namespace WebApiCar.Controllers
         [HttpGet]
         public IEnumerable<Car> Get()
         {
-            var carList = new List<Car>();
+            
 
             string selectall = "select id, vendor, model, price from Car";
+            
+
+
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
@@ -59,10 +63,12 @@ namespace WebApiCar.Controllers
                 }
 
 
-                    }
+            }
 
-                return carList;
+            return carList;
         }
+
+
 
         // GET: api/Cars/5
         [HttpGet("{id}", Name = "Get")]
