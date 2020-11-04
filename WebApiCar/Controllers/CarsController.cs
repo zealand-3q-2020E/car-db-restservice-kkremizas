@@ -33,13 +33,8 @@ namespace WebApiCar.Controllers
         [HttpGet]
         public IEnumerable<Car> Get()
         {
-            
-
             string selectall = "select id, vendor, model, price from Car";
             
-
-
-
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
                 using (SqlCommand selectCommand = new SqlCommand(selectall, databaseConnection))
@@ -58,24 +53,77 @@ namespace WebApiCar.Controllers
                             carList.Add(new Car(id,vendor,model,price));
 
                         }
-
                     }
                 }
-
-
             }
-
             return carList;
         }
-
-
+        
 
         // GET: api/Cars/5
         [HttpGet("{id}", Name = "Get")]
         public Car Get(int id)
         {
-            return carList.FirstOrDefault(x => x.Id == id);
+            string selectById = "select vendor, model, price from Car where id = @id";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectById, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@id", id);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string vendor = reader.GetString(0);
+                            string model = reader.GetString(1);
+                            int price = reader.GetInt32(2);
+
+                            return new Car(id, vendor, model, price);
+
+                        }
+                    }
+                }
+            }
+            return null;
         }
+
+        // GET: api/Cars/Tesla
+        [HttpGet("ByVendor/{vendorGet}", Name = "GetByVendor")]
+        public IEnumerable<Car> GetByVendor(string vendorGet)
+        {
+            var carList = new List<Car>();
+            string selectVendor = "select id, vendor, model, price from Car where vendor = @vendor";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectVendor, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@vendor", vendorGet);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
+
+
+
 
         /// <summary>
         /// Post a new car to the static list
