@@ -30,8 +30,8 @@ namespace WebApiCar.Controllers
         /// </summary>
         /// <returns>List of cars</returns>
         // GET: api/Cars
-        [HttpGet]
-        public IEnumerable<Car> Get()
+        [HttpGet(Name = "GetAll")]
+        public IEnumerable<Car> GetAll()
         {
             string selectall = "select id, vendor, model, price from Car";
             
@@ -61,7 +61,7 @@ namespace WebApiCar.Controllers
         
 
         // GET: api/Cars/5
-        [HttpGet("{id}", Name = "Get")]
+        [HttpGet("{id}", Name = "GetbyId")]
         public Car Get(int id)
         {
             string selectById = "select vendor, model, price from Car where id = @id";
@@ -90,8 +90,8 @@ namespace WebApiCar.Controllers
             return null;
         }
 
-        // GET: api/Cars/Tesla
-        [HttpGet("ByVendor/{vendorGet}", Name = "GetByVendor")]
+        // GET: api/Cars/Vendor/Tesla
+        [HttpGet("byVendor/{vendorGet}", Name = "GetByVendor")]
         public IEnumerable<Car> GetByVendor(string vendorGet)
         {
             var carList = new List<Car>();
@@ -122,7 +122,140 @@ namespace WebApiCar.Controllers
             return carList;
         }
 
+        // GET: api/Cars/Model/X1
+        [HttpGet("byModel/{modelGet}", Name = "GetByModel")]
+        public IEnumerable<Car> GetByModel(string modelGet)
+        {
+            var carList = new List<Car>();
+            string selectModel = "select id, vendor, model, price from Car where model = @model";
 
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectModel, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@model", modelGet);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
+
+        // GET: api/Cars/Price/5000
+        [HttpGet("byPrice/{priceGet}", Name = "GetByPrice")]
+        public IEnumerable<Car> GetByPrice(string priceGet)
+        {
+            var carList = new List<Car>();
+            string selectPrice = "select id, vendor, model, price from Car where price = @price";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectPrice, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@price", priceGet);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
+
+        // GET: api/Cars/Price/Ascending/true
+        [HttpGet("byPrice/{priceGet}/Ascending/{ascending}", Name = "GetByPriceAscending")]
+        public IEnumerable<Car> GetByPriceAscending(string priceGet, bool ascending)
+        {
+            var carList = new List<Car>();
+            string selectPrice = "select id, vendor, model, price from Car where price = @price order by vendor ";
+            if (ascending)
+                selectPrice += "ASC";
+            else
+                selectPrice += "DESC";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectPrice, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@price", priceGet);
+                    selectCommand.Parameters.AddWithValue("@asc", ascending);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
+
+        
+        // GET: api/Cars/byVendor/Tesla/10000
+        [HttpGet("byVendor/{vendorGet}/{priceGet}", Name = "GetByVendorAndPrice")]
+        public IEnumerable<Car> GetByVendorAndPrice(string vendorGet, string priceGet)
+        {
+            var carList = new List<Car>();
+            string selectVendorAndPrice = "select id, vendor, model, price from Car where vendor = @vendor and price = @price";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                using (SqlCommand selectCommand = new SqlCommand(selectVendorAndPrice, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@vendor", vendorGet);
+                    selectCommand.Parameters.AddWithValue("@price", priceGet);
+                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
 
 
         /// <summary>
