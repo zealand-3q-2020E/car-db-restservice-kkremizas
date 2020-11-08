@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using WebApiCar.Model;
 
 namespace WebApiCar.Controllers
@@ -26,7 +27,7 @@ namespace WebApiCar.Controllers
         //};
 
         /// <summary>
-        /// Method for get all the cars from the static list
+        /// Method for get all the cars from the database
         /// </summary>
         /// <returns>List of cars</returns>
         // GET: api/Cars
@@ -37,9 +38,10 @@ namespace WebApiCar.Controllers
             
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectall, databaseConnection))
                 {
-                    databaseConnection.Open();
+
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -58,8 +60,12 @@ namespace WebApiCar.Controllers
             }
             return carList;
         }
-        
 
+        /// <summary>
+        /// Method for get the car with the specific id 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>Car</returns>
         // GET: api/Cars/5
         [HttpGet("{id}", Name = "GetbyId")]
         public Car Get(int id)
@@ -68,10 +74,10 @@ namespace WebApiCar.Controllers
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectById, databaseConnection))
                 {
                     selectCommand.Parameters.AddWithValue("@id", id);
-                    databaseConnection.Open();
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -90,6 +96,11 @@ namespace WebApiCar.Controllers
             return null;
         }
 
+        /// <summary>
+        /// Method for get all the cars by a specific Vendor
+        /// </summary>
+        /// <param name="vendorGet"></param>
+        /// <returns>List of cars</returns>
         // GET: api/Cars/Vendor/Tesla
         [HttpGet("byVendor/{vendorGet}", Name = "GetByVendor")]
         public IEnumerable<Car> GetByVendor(string vendorGet)
@@ -99,10 +110,10 @@ namespace WebApiCar.Controllers
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectVendor, databaseConnection))
                 {
                     selectCommand.Parameters.AddWithValue("@vendor", vendorGet);
-                    databaseConnection.Open();
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -122,6 +133,11 @@ namespace WebApiCar.Controllers
             return carList;
         }
 
+        /// <summary>
+        /// Method for get all the cars by a specific model
+        /// </summary>
+        /// <param name="modelGet"></param>
+        /// <returns>List of cars</returns>
         // GET: api/Cars/Model/X1
         [HttpGet("byModel/{modelGet}", Name = "GetByModel")]
         public IEnumerable<Car> GetByModel(string modelGet)
@@ -131,10 +147,10 @@ namespace WebApiCar.Controllers
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectModel, databaseConnection))
                 {
                     selectCommand.Parameters.AddWithValue("@model", modelGet);
-                    databaseConnection.Open();
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -154,6 +170,11 @@ namespace WebApiCar.Controllers
             return carList;
         }
 
+        /// <summary>
+        /// Method for get all the cars by a specific price
+        /// </summary>
+        /// <param name="priceGet"></param>
+        /// <returns>List of cars</returns>
         // GET: api/Cars/Price/5000
         [HttpGet("byPrice/{priceGet}", Name = "GetByPrice")]
         public IEnumerable<Car> GetByPrice(string priceGet)
@@ -163,10 +184,10 @@ namespace WebApiCar.Controllers
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectPrice, databaseConnection))
                 {
                     selectCommand.Parameters.AddWithValue("@price", priceGet);
-                    databaseConnection.Open();
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -186,6 +207,12 @@ namespace WebApiCar.Controllers
             return carList;
         }
 
+        /// <summary>
+        /// Method for get all the cars by a specific price ordered by Vendor
+        /// </summary>
+        /// <param name="priceGet"></param>
+        /// <param name="ascending"></param>
+        /// <returns>List of cars</returns>
         // GET: api/Cars/Price/Ascending/true
         [HttpGet("byPrice/{priceGet}/Ascending/{ascending}", Name = "GetByPriceAscending")]
         public IEnumerable<Car> GetByPriceAscending(string priceGet, bool ascending)
@@ -199,11 +226,50 @@ namespace WebApiCar.Controllers
 
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
+                databaseConnection.Open();
                 using (SqlCommand selectCommand = new SqlCommand(selectPrice, databaseConnection))
                 {
                     selectCommand.Parameters.AddWithValue("@price", priceGet);
                     selectCommand.Parameters.AddWithValue("@asc", ascending);
-                    databaseConnection.Open();
+
+                    using (SqlDataReader reader = selectCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int id = reader.GetInt32(0);
+                            string vendor = reader.GetString(1);
+                            string model = reader.GetString(2);
+                            int price = reader.GetInt32(3);
+
+                            carList.Add(new Car(id, vendor, model, price));
+
+                        }
+                    }
+                }
+            }
+            return carList;
+        }
+
+        /// <summary>
+        /// Method for get all the cars by a specific Vendor and Price
+        /// </summary>
+        /// <param name="vendorGet"></param>
+        /// <param name="priceGet"></param>
+        /// <returns>List of cars</returns>
+        // GET: api/Cars/byVendor/Tesla/10000
+        [HttpGet("byVendor/{vendorGet}/{priceGet}", Name = "GetByVendorAndPrice")]
+        public IEnumerable<Car> GetByVendorAndPrice(string vendorGet, string priceGet)
+        {
+            var carList = new List<Car>();
+            string selectVendorAndPrice = "select id, vendor, model, price from Car where vendor = @vendor and price = @price";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                databaseConnection.Open();
+                using (SqlCommand selectCommand = new SqlCommand(selectVendorAndPrice, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@vendor", vendorGet);
+                    selectCommand.Parameters.AddWithValue("@price", priceGet);
 
                     using (SqlDataReader reader = selectCommand.ExecuteReader())
                     {
@@ -224,68 +290,81 @@ namespace WebApiCar.Controllers
         }
 
         
-        // GET: api/Cars/byVendor/Tesla/10000
-        [HttpGet("byVendor/{vendorGet}/{priceGet}", Name = "GetByVendorAndPrice")]
-        public IEnumerable<Car> GetByVendorAndPrice(string vendorGet, string priceGet)
-        {
-            var carList = new List<Car>();
-            string selectVendorAndPrice = "select id, vendor, model, price from Car where vendor = @vendor and price = @price";
-
-            using (SqlConnection databaseConnection = new SqlConnection(conn))
-            {
-                using (SqlCommand selectCommand = new SqlCommand(selectVendorAndPrice, databaseConnection))
-                {
-                    selectCommand.Parameters.AddWithValue("@vendor", vendorGet);
-                    selectCommand.Parameters.AddWithValue("@price", priceGet);
-                    databaseConnection.Open();
-
-                    using (SqlDataReader reader = selectCommand.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int id = reader.GetInt32(0);
-                            string vendor = reader.GetString(1);
-                            string model = reader.GetString(2);
-                            int price = reader.GetInt32(3);
-
-                            carList.Add(new Car(id, vendor, model, price));
-
-                        }
-                    }
-                }
-            }
-            return carList;
-        }
-
-
         /// <summary>
         /// Post a new car to the static list
         /// </summary>
         /// <param name="value"></param>
         // POST: api/Cars
         [HttpPost]
-        public void Post([FromBody] Car value)
+        public string Post([FromBody] Car value)
         {
-            Car newcar = new Car() { Id = GetId(), Model = value.Model, Vendor = value.Vendor, Price = value.Price };
-            carList.Add(newcar);
+            string insertString = "";
+            var carList = new List<Car>();
+            string insertCar = "insert into car (id,model,vendor,price) values (@id,@model,@vendor,@price)";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                databaseConnection.Open();
+                using (SqlCommand insertCommand = new SqlCommand(insertCar, databaseConnection))
+                {
+                    insertCommand.Parameters.AddWithValue("@id", GetId());
+                    insertCommand.Parameters.AddWithValue("@model",value.Model);
+                    insertCommand.Parameters.AddWithValue("@vendor",value.Vendor);
+                    insertCommand.Parameters.AddWithValue("@price",value.Price);
+                    int rowsAffected = insertCommand.ExecuteNonQuery();
+                    insertString = $"Row(s) affected: {rowsAffected}.\nCar with id {GetId()} inserted.";
+                }
+                return insertString;
+            }
+            
         }
 
         // PUT: api/Cars/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Car value)
+        public string Put(int id, [FromBody] Car value)
         {
+            string updateString = "";
+            string updateCar = "update car set model = @model, vendor = @vendor, price = @price where id = @id";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                databaseConnection.Open();
+                using (SqlCommand insertCommand = new SqlCommand(updateCar, databaseConnection))
+                {
+                    insertCommand.Parameters.AddWithValue("@id", id);
+                    insertCommand.Parameters.AddWithValue("@model", value.Model);
+                    insertCommand.Parameters.AddWithValue("@vendor", value.Vendor);
+                    insertCommand.Parameters.AddWithValue("@price", value.Price);
+                    int rowsAffected = insertCommand.ExecuteNonQuery();
+                    updateString = $"Row(s) affected: {rowsAffected}.\nCar with id {id} updated.";
+                }
+                return updateString;
+            }
         }
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public string Delete(int id)
         {
-            carList.Remove(Get(id));
+            string deleteString = "";
+            string deleteCar = "delete from car where id = @id";
+
+            using (SqlConnection databaseConnection = new SqlConnection(conn))
+            {
+                databaseConnection.Open();
+                using (SqlCommand selectCommand = new SqlCommand(deleteCar, databaseConnection))
+                {
+                    selectCommand.Parameters.AddWithValue("@id", id);
+                    int rowsAffected = selectCommand.ExecuteNonQuery();
+                    deleteString = $"Row(s) affected: {rowsAffected}.\nCar with id {id} deleted.";
+                }
+                return deleteString;
+            }
         }
 
        int GetId()
         {
-            int max = carList.Max(x => x.Id);
+            int max = GetAll().Max(x => x.Id);
             return max+1;
         }
 
