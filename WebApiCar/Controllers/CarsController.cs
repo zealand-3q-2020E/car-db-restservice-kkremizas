@@ -14,18 +14,9 @@ namespace WebApiCar.Controllers
     [ApiController]
     public class CarsController : ControllerBase
     {
-
-        static string conn = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CarDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        static string conn = "Server=tcp:3rdsemesterserver.database.windows.net,1433;Initial Catalog=CarsDB;Persist Security Info=False;User ID=werty89;Password=Machinehead1989;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         List<Car> carList = new List<Car>();
-
-        //public static List<Car> carList = new List<Car>()
-        //{
-        //    new Car(){Id = 1,Model="x3",Vendor="Tesla", Price=400000},
-        //    new Car(){Id = 2,Model="x2",Vendor="Tesla", Price=600000},
-        //    new Car(){Id = 3,Model="x1",Vendor="Tesla", Price=800000},
-        //    new Car(){Id = 4,Model="x0",Vendor="Tesla", Price=1400000},
-        //};
-
+        
         /// <summary>
         /// Method for get all the cars from the database
         /// </summary>
@@ -307,12 +298,13 @@ namespace WebApiCar.Controllers
                 databaseConnection.Open();
                 using (SqlCommand insertCommand = new SqlCommand(insertCar, databaseConnection))
                 {
-                    insertCommand.Parameters.AddWithValue("@id", GetId());
+                    int newid = GetId();
+                    insertCommand.Parameters.AddWithValue("@id", newid);
                     insertCommand.Parameters.AddWithValue("@model",value.Model);
                     insertCommand.Parameters.AddWithValue("@vendor",value.Vendor);
                     insertCommand.Parameters.AddWithValue("@price",value.Price);
                     int rowsAffected = insertCommand.ExecuteNonQuery();
-                    insertString = $"Row(s) affected: {rowsAffected}.\nCar with id {GetId()} inserted.";
+                    insertString = $"Row(s) affected: {rowsAffected}.\nCar with id {newid} inserted.";
                 }
                 return insertString;
             }
