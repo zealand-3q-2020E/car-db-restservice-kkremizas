@@ -25,12 +25,12 @@ namespace WebApiCar.Controllers
         [HttpGet(Name = "GetAll")]
         public IEnumerable<Car> GetAll()
         {
-            string selectall = "select id, vendor, model, price from Car";
+            string selectAll = "select id, vendor, model, price from Car";
             
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
                 databaseConnection.Open();
-                using (SqlCommand selectCommand = new SqlCommand(selectall, databaseConnection))
+                using (SqlCommand selectCommand = new SqlCommand(selectAll, databaseConnection))
                 {
 
 
@@ -321,13 +321,13 @@ namespace WebApiCar.Controllers
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
                 databaseConnection.Open();
-                using (SqlCommand insertCommand = new SqlCommand(updateCar, databaseConnection))
+                using (SqlCommand updateCommand = new SqlCommand(updateCar, databaseConnection))
                 {
-                    insertCommand.Parameters.AddWithValue("@id", id);
-                    insertCommand.Parameters.AddWithValue("@model", value.Model);
-                    insertCommand.Parameters.AddWithValue("@vendor", value.Vendor);
-                    insertCommand.Parameters.AddWithValue("@price", value.Price);
-                    int rowsAffected = insertCommand.ExecuteNonQuery();
+                    updateCommand.Parameters.AddWithValue("@id", id);
+                    updateCommand.Parameters.AddWithValue("@model", value.Model);
+                    updateCommand.Parameters.AddWithValue("@vendor", value.Vendor);
+                    updateCommand.Parameters.AddWithValue("@price", value.Price);
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
                     updateString = $"Row(s) affected: {rowsAffected}.\nCar with id {id} updated.";
                 }
                 return updateString;
@@ -344,10 +344,10 @@ namespace WebApiCar.Controllers
             using (SqlConnection databaseConnection = new SqlConnection(conn))
             {
                 databaseConnection.Open();
-                using (SqlCommand selectCommand = new SqlCommand(deleteCar, databaseConnection))
+                using (SqlCommand deleteCommand = new SqlCommand(deleteCar, databaseConnection))
                 {
-                    selectCommand.Parameters.AddWithValue("@id", id);
-                    int rowsAffected = selectCommand.ExecuteNonQuery();
+                    deleteCommand.Parameters.AddWithValue("@id", id);
+                    int rowsAffected = deleteCommand.ExecuteNonQuery();
                     deleteString = $"Row(s) affected: {rowsAffected}.\nCar with id {id} deleted.";
                 }
                 return deleteString;
